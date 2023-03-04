@@ -70,3 +70,29 @@ bool DwinLCD::ReadData(u16 VP, u8 *buff, u8 size, u32 timeout)
 
     return true;
 }
+
+short DwinLCD::ReadData(u8 *buff, u8 size, u32 timeout)
+{
+    u32 startTime = millis();
+
+    while (!softSerial.available())
+    {
+        if (millis() - startTime > timeout)
+            return -1;
+        delay(1);
+    }
+
+    if (softSerial.read() != 0x5A || softSerial.read() != 0xA5)
+        return -1;
+
+    u8 size = softSerial.read();
+
+    if (softSerial.read() != 0xffffff83)
+        return -1;
+
+    short resultLen = 0;
+    while (softSerial.available() > 0)
+        buff[resultLen++] = softSerial.read();
+
+    return resultLen;
+}

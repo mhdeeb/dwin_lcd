@@ -19,6 +19,8 @@ public:
     void SendData(u16 VP, u8 data);
 
     bool ReadData(u16 VP, u8 *buff, u8 size, u32 timeout = 1000);
+
+    short ReadData(u8 *buff, u8 size, u32 timeout = 1000);
 };
 
 #endif // DWIN_LCD_H
