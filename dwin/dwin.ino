@@ -7,9 +7,16 @@ DwinLCD lcd(9600, A5, A4);
 #define VP_WAIT_TIME_M 0x1003
 #define VP_WAIT_TIME_S 0x1004
 #define VP_DENISTY 0x1005
+#define VP_TIMER_PREVIEW 0x1006
+#define VP_TIMER_WAIT 0x1008
+#define VP_TIMER_CLEAN 0x100A
+
+#define PIN_PUMP 3
 
 u8 buffer[256]{};
+u8 previewTimer[2]{};
 u8 button{};
+u8 VU{};
 
 void setup()
 {
@@ -28,28 +35,23 @@ void loop()
     {
     case VP_BUTTON:
       button = buffer[6];
-      switch(button)
+      switch (button)
       {
-        case 1:
-          Serial.println("Start");
-          break;
-        case 2:
-          Serial.println("Stop");
-          break;
-        case 3:
-          Serial.println("Reset");
-          break;
-        case 4:
-          Serial.println("Pause");
-          break;
-        case 5:
-          Serial.println("Resume");
-          break;
+      case 1:
+        Serial.println("Start");
+        break;
+      case 2:
+        Serial.println("Stop Wait");
+        break;
+      case 3:
+        Serial.println("Stop Clean");
+        break;
       }
       button = 0;
       break;
     case VP_ROOM_VOLUME:
       Serial.println("Room Volume");
+      lcd.ReadData(VP_TIMER_PREVIEW, previewTimer, 2, 1000);
       break;
     case VP_WAIT_TIME_M:
       Serial.println("Wait Time M");
