@@ -5,8 +5,8 @@ Version=-1
 SCREENDSIZE=480X272
 SPADDRESS=5000
 [IMG]
-1=home.png
-2=start.png
-3=edit.png
-5=wait.png
-4=on.png
+00=00.png
+01=01.png
+02=02.png
+03=03.png
+04=04.png
