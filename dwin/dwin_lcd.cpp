@@ -75,6 +75,8 @@ short DwinLCD::ReadData(u8 *buff, u8 size, u32 timeout)
 {
     u32 startTime = millis();
 
+    Serial.println(softSerial.available());
+
     while (!softSerial.available())
     {
         if (millis() - startTime > timeout)
