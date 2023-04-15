@@ -16,9 +16,11 @@ public:
 
     void SendData(u16 VP, u8 *buff, u8 size);
 
-    void SendData(u16 VP, u8 data);
+    void SendData(u16 VP, u16 data);
 
     bool ReadData(u16 VP, u8 *buff, u8 size, u32 timeout = 1000);
+
+    bool ReadPointer(u16 VP, u16 &data, u32 timeout = 1000);
 
     short ReadData(u8 *buff, u8 size, u32 timeout = 1000);
 };

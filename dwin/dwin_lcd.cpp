@@ -31,7 +31,7 @@ void DwinLCD::SendData(u16 VP, u8 *buff, u8 size)
         softSerial.write(buff[i]);
 }
 
-void DwinLCD::SendData(u16 VP, u8 data)
+void DwinLCD::SendData(u16 VP, u16 data)
 {
     softSerial.write(0x5A);
     softSerial.write(0xA5);
@@ -39,7 +39,8 @@ void DwinLCD::SendData(u16 VP, u8 data)
     softSerial.write(0x82);
     softSerial.write(VP >> 8);
     softSerial.write(VP & 0xFF);
-    softSerial.write(data);
+    softSerial.write(data >> 8);
+    softSerial.write(data & 0xFF);
 }
 
 bool DwinLCD::ReadData(u16 VP, u8 *buff, u8 size, u32 timeout)
@@ -74,9 +75,7 @@ bool DwinLCD::ReadData(u16 VP, u8 *buff, u8 size, u32 timeout)
 short DwinLCD::ReadData(u8 *buff, u8 size, u32 timeout)
 {
     u32 startTime = millis();
-
-    Serial.println(softSerial.available());
-
+    
     while (!softSerial.available())
     {
         if (millis() - startTime > timeout)
@@ -92,4 +91,14 @@ short DwinLCD::ReadData(u8 *buff, u8 size, u32 timeout)
         buff[resultLen++] = softSerial.read();
 
     return resultLen;
+}
+
+bool DwinLCD::ReadPointer(u16 VP, u16& data, u32 timeout)
+{
+    u8 buff[2];
+    if (!ReadData(VP, buff, 2, timeout))
+        return false;
+
+    data = buff[0] << 8 | buff[1];
+    return true;
 }
