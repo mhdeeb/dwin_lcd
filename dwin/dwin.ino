@@ -1,4 +1,6 @@
 #include "dwin_lcd.h"
+#include "Timer.h"
+
 #include <EEPROM.h>
 
 DwinLCD lcd(9600, 0, 1);
@@ -22,6 +24,9 @@ u16 denisty;
 u16 roomVolume = 1;
 u8 pumpPerSec = 2;
 
+Timer timer_wait(0);
+Timer timer_work(0);
+
 void setup()
 {
   Serial.begin(9600);
@@ -39,7 +44,10 @@ void setup()
 
   lcd.SendData(VP_WAIT_TIME, EEPROM.read(2) << 8 | EEPROM.read(3));
   lcd.SendData(VP_DENISTY, EEPROM.read(1) << 8);
+  waitTime = EEPROM.read(2) << 8 | EEPROM.read(3);
   denisty = EEPROM.read(1) << 8;
+
+  timer_wait.Set(waitTime);
 }
 
 void loop()
@@ -56,13 +64,16 @@ void loop()
       switch (button)
       {
       case 1:
-        Serial.println("Start");
+        timer_wait.Set(waitTime);
+        timer_wait.Start();
         break;
       case 2:
-        Serial.println("Stop Wait");
+        lcd.ChangePage(2);
+        timer_wait.Reset();
         break;
       case 3:
-        Serial.println("Stop Clean");
+        lcd.ChangePage(2);
+        timer_work.Reset();
         break;
       }
       button = 0;
@@ -89,4 +100,29 @@ void loop()
 
     lcd.SendData(VP_TIMER_PREVIEW, previewTimer);
   }
+
+  timer_wait.Update();
+  timer_work.Update();
+
+  if (timer_wait.IsFinished())
+  {
+    timer_wait.Reset();
+    lcd.ChangePage(4);
+    digitalWrite(PIN_PUMP, HIGH);
+  }
+
+  if (timer_work.IsFinished())
+  {
+    timer_work.Reset();
+    lcd.ChangePage(0);
+    digitalWrite(PIN_PUMP, LOW);
+  }
+
+  u16 timer = timer_wait.GetTime() / 1000;
+
+  lcd.SendData(VP_TIMER_WAIT, timer / 60 << 8 | timer % 60);
+
+  timer = timer_work.GetTime() / 1000;
+
+  lcd.SendData(VP_TIMER_CLEAN, timer / 60 << 8 | timer % 60);
 }
