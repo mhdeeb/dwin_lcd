@@ -1,16 +1,12 @@
 #ifndef DWIN_LCD_H
 #define DWIN_LCD_H
 
-#include <SoftwareSerial.h>
 #include "Arduino.h"
 
 class DwinLCD
 {
-private:
-    SoftwareSerial softSerial;
-
 public:
-    DwinLCD(u32 baud, u8 RX, u8 TX);
+    void being(u32 baud);
 
     void ChangePage(u16 page);
 

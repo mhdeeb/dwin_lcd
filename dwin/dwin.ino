@@ -3,7 +3,7 @@
 
 #include <EEPROM.h>
 
-DwinLCD lcd(9600, 0, 1);
+DwinLCD lcd;
 
 #define VP_ROOM_VOLUME 0x1001
 #define VP_TIMER_PREVIEW 0x1002
@@ -29,7 +29,7 @@ Timer timer_work(0);
 
 void setup()
 {
-  Serial.begin(9600);
+  lcd.being(9600);
 
   lcd.SendData(VP_BUTTON, 0x00);
   lcd.SendData(VP_ROOM_VOLUME, roomVolume << 8);
@@ -44,6 +44,7 @@ void setup()
 
   lcd.SendData(VP_WAIT_TIME, EEPROM.read(2) << 8 | EEPROM.read(3));
   lcd.SendData(VP_DENISTY, EEPROM.read(1) << 8);
+
   waitTime = EEPROM.read(2) << 8 | EEPROM.read(3);
   denisty = EEPROM.read(1) << 8;
 
