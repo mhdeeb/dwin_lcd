@@ -43,6 +43,7 @@ void Timer::Update()
     if (isRunning && (millis() - lastUpdateTime) >= updateDelay || isFinished)
     {
         counter.Decrement();
+
         if (counter.GetValue() == counter.GetMin())
         {
             isRunning = false;
