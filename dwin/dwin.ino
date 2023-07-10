@@ -11,20 +11,18 @@ DwinLCD lcd;
 #define PIN_PUMP 3
 
 u8 buffer[256]{};
-u16 waitTime = 300;
+u16 waitTime = 10;
 
 Timer timer_wait(waitTime);
 
 void setup()
 {
     lcd.being(9600);
-
-    lcd.SendData(VP_WAIT_TIME, waitTime);
 }
 
 void loop()
 {
-    short size = lcd.ReadData(buffer, 256, 1);
+    short size = lcd.ReadData(buffer, 256, 1000);
 
     if (size != -1)
     {
@@ -35,30 +33,38 @@ void loop()
             timer_wait.Reset();
             break;
         case VP_BUTTON_PAUSE:
-            timer_wait.Stop();
+            if (timer_wait.IsRunning())
+                timer_wait.Stop();
+            else
+                timer_wait.Start();
             break;
         case VP_BUTTON_START:
             timer_wait.Start();
             break;
         case VP_WAIT_TIME:
-            waitTime = (u16)buffer[2] << 8 | buffer[3];
+            waitTime = buffer[3] * 60 + buffer[4];
             timer_wait.Set(waitTime);
+            timer_wait.PopChanged();
             break;
         }
     }
 
     timer_wait.Update();
 
+    if (timer_wait.PopChanged())
+    {
+        u16 currTime = timer_wait.GetTime();
+        lcd.SendData(VP_WAIT_TIME, currTime / 60 << 8 | currTime % 60);
+    }
+
     if (timer_wait.IsRunning())
-    {
         digitalWrite(PIN_PUMP, HIGH);
-    }
     else
-    {
         digitalWrite(PIN_PUMP, LOW);
+
+    if (timer_wait.IsFinished())
+    {
+        lcd.ChangePage(0);
+        timer_wait.Reset();
     }
-
-    u16 timer = timer_wait.GetTime();
-
-    lcd.SendData(VP_WAIT_TIME, timer / 60 << 8 | timer % 60);
 }

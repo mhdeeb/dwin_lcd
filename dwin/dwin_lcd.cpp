@@ -7,16 +7,20 @@ void DwinLCD::being(u32 baud)
 
 void DwinLCD::ChangePage(u16 page)
 {
-    Serial.write(0x5A);
-    Serial.write(0xA5);
-    Serial.write(0x07);
-    Serial.write(0x82);
-    Serial.write((byte)0);
-    Serial.write(0x84);
-    Serial.write(0x5A);
-    Serial.write(0x01);
-    Serial.write(page >> 8);
-    Serial.write(page & 0xFF);
+    u8 buff[] = {
+        0x5A,
+        0xA5,
+        0x07,
+        0x82,
+        0x00,
+        0x84,
+        0x5A,
+        0x01,
+        page >> 8,
+        page & 0xFF,
+    };
+
+    Serial.write(buff, 10);
 }
 
 void DwinLCD::SendData(u16 VP, u8 *buff, u8 size)
@@ -33,14 +37,18 @@ void DwinLCD::SendData(u16 VP, u8 *buff, u8 size)
 
 void DwinLCD::SendData(u16 VP, u16 data)
 {
-    Serial.write(0x5A);
-    Serial.write(0xA5);
-    Serial.write(0x04);
-    Serial.write(0x82);
-    Serial.write(VP >> 8);
-    Serial.write(VP & 0xFF);
-    Serial.write(data >> 8);
-    Serial.write(data & 0xFF);
+    u8 buff[] = {
+        0x5A,
+        0xA5,
+        0x05,
+        0x82,
+        VP >> 8,
+        VP & 0xFF,
+        data >> 8,
+        data & 0xFF,
+    };
+
+    Serial.write(buff, 8);
 }
 
 bool DwinLCD::ReadData(u16 VP, u8 *buff, u8 size, u32 timeout)
@@ -76,19 +84,49 @@ short DwinLCD::ReadData(u8 *buff, u8 size, u32 timeout)
 {
     u32 startTime = millis();
 
-    while (!Serial.available())
+    while (Serial.available() < 4)
     {
         if (millis() - startTime > timeout)
             return -1;
         delay(1);
     }
 
-    if (Serial.read() != 0x5A || Serial.read() != 0xA5 || !Serial.read() || Serial.read() != 0xffffff83)
-        return -1;
+    u8 buff2[4];
 
-    short resultLen = 0;
-    while (Serial.available() > 0)
-        buff[resultLen++] = Serial.read();
+    Serial.readBytes(buff2, 4);
+    u8 count = buff2[2];
+
+    Serial.println("\nHeader:\n");
+    Serial.print("Head 0: ");
+    Serial.println(buff2[0], HEX);
+    Serial.print("Head 1: ");
+    Serial.println(buff2[1], HEX);
+    Serial.print("Count: ");
+    Serial.println(buff2[2], HEX);
+    Serial.print("Code: ");
+    Serial.println(buff2[3], HEX);
+
+    while (Serial.available() < count - 1)
+    {
+        if (millis() - startTime > timeout)
+            return -1;
+        delay(1);
+    }
+
+    short resultLen = Serial.readBytes(buff, count - 1);
+
+    Serial.println("\nData:\n");
+    Serial.print("Count: ");
+    Serial.println(resultLen);
+    Serial.print("VP: ");
+    Serial.println(buff[0] << 8 | buff[1], HEX);
+
+    for (int i = 2; i < resultLen; i++)
+    {
+        Serial.print(i - 2);
+        Serial.print(": ");
+        Serial.println(buff[i]);
+    }
 
     return resultLen;
 }

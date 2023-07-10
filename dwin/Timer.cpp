@@ -8,13 +8,15 @@
 
 Timer::Timer(u32 initialValue) : counter(0, initialValue, initialValue, 1, false), lastUpdateTime(millis())
 {
-    counter.SetValue(initialValue);
+    Set(initialValue);
 }
 
 void Timer::Set(u32 value)
 {
     counter.SetMax(value);
     counter.SetValue(value);
+
+    isChanged = true;
 }
 
 void Timer::Start()
@@ -31,7 +33,7 @@ void Timer::Stop()
 
 void Timer::Reset()
 {
-    counter.SetValue(counter.GetMax());
+    Set(counter.GetMax());
     isRunning = false;
     isFinished = false;
 }
@@ -40,7 +42,7 @@ void Timer::SetUpdateDelay(u32 updateDelay) { this->updateDelay = updateDelay; }
 
 void Timer::Update()
 {
-    if (isRunning && (millis() - lastUpdateTime) >= updateDelay || isFinished)
+    if (isRunning && (millis() - lastUpdateTime) >= updateDelay)
     {
         counter.Decrement();
 
@@ -51,10 +53,19 @@ void Timer::Update()
         }
 
         lastUpdateTime = millis();
+
+        isChanged = true;
     }
 }
 bool Timer::IsRunning() const { return isRunning; }
 
 bool Timer::IsFinished() const { return isFinished; }
+
+bool Timer::PopChanged()
+{
+    bool temp = isChanged;
+    isChanged = false;
+    return temp;
+}
 
 u32 Timer::GetTime() const { return counter.GetValue(); }

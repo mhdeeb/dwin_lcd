@@ -17,6 +17,7 @@ private:
     u32 updateDelay = 1000;
     bool isRunning = false;
     bool isFinished = false;
+    bool isChanged = false;
 
 public:
     Timer(u32 initialValue);
@@ -36,6 +37,8 @@ public:
     bool IsRunning() const;
 
     bool IsFinished() const;
+
+    bool PopChanged();
 
     u32 GetTime() const;
 };
