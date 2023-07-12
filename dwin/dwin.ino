@@ -11,9 +11,9 @@ DwinLCD lcd;
 #define PIN_PUMP 3
 
 u8 buffer[256]{};
-u16 waitTime = 10;
-u16 pauseTime = 5;
-u16 lastTime = 0;
+u16 waitTime = 300;
+const u16 pauseTime = 30;
+u16 lastTime = waitTime;
 bool isRunning = false;
 
 Timer timer_wait(waitTime);
@@ -21,6 +21,7 @@ Timer timer_wait(waitTime);
 void setup()
 {
     lcd.being(9600);
+    lcd.ChangePage(0);
 }
 
 void loop()
@@ -54,6 +55,7 @@ void loop()
         break;
         case VP_WAIT_TIME:
             waitTime = buffer[3] * 60 + buffer[4];
+            lastTime = waitTime;
             timer_wait.Set(waitTime);
             timer_wait.PopChanged();
             break;
