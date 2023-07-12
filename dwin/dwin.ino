@@ -22,6 +22,8 @@ void setup()
 {
     lcd.being(9600);
     lcd.ChangePage(0);
+    digitalWrite(PIN_PUMP, LOW);
+    Serial.println("POWER ON");
 }
 
 void loop()
@@ -39,12 +41,25 @@ void loop()
             {
                 timer_wait.Set(lastTime);
             }
+            else
+            {
+                digitalWrite(PIN_PUMP, LOW);
+                Serial.println("PUMP STOPPED");
+            }
             break;
         case VP_BUTTON_PAUSE:
             if (timer_wait.IsRunning())
+            {
                 timer_wait.Stop();
+                digitalWrite(PIN_PUMP, LOW);
+                Serial.println("PUMP PAUSED");
+            }
             else
+            {
                 timer_wait.Start();
+                digitalWrite(PIN_PUMP, HIGH);
+                Serial.println("PUMP RESUMED");
+            }
             break;
         case VP_BUTTON_START:
         {
@@ -70,17 +85,6 @@ void loop()
         lcd.SendData(VP_WAIT_TIME, currTime / 60 << 8 | currTime % 60);
     }
 
-    if (timer_wait.IsRunning() && isRunning)
-    {
-        digitalWrite(PIN_PUMP, HIGH);
-        Serial.println("PUMP ON");
-    }
-    else
-    {
-        digitalWrite(PIN_PUMP, LOW);
-        Serial.println("PUMP OFF");
-    }
-
     if (timer_wait.IsFinished())
     {
         if (isRunning)
@@ -88,6 +92,8 @@ void loop()
             lcd.ChangePage(0);
             timer_wait.Reset();
             isRunning = false;
+            digitalWrite(PIN_PUMP, LOW);
+            Serial.println("PUMP FINISHED");
         }
         else
         {
@@ -95,6 +101,8 @@ void loop()
             timer_wait.Set(lastTime);
             timer_wait.Start();
             isRunning = true;
+            digitalWrite(PIN_PUMP, HIGH);
+            Serial.println("PUMP STARTED");
         }
     }
 }
