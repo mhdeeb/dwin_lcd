@@ -3,10 +3,17 @@
 
 DwinLCD lcd;
 
-#define VP_BUTTON_RESET 0x1001
-#define VP_BUTTON_PAUSE 0x1002
-#define VP_BUTTON_START 0x1003
-#define VP_WAIT_TIME 0x1004
+#define VP_ROOM_NO_START 0x1001
+#define VP_ROOM_NO_EDIT 0x1002
+#define VP_ROOM_VOL_EDIT 0x1003
+#define VP_TIMER 0x1004
+#define VP_BUTTONS 0x1008
+
+#define BUTTON_EDIT 0x0000
+#define BUTTON_START 0x0001
+#define BUTTON_RETURN 0x0002
+#define BUTTON_STOP 0x0003
+#define BUTTON_PAUSE 0x0004
 
 #define PIN_PUMP 3
 
@@ -33,42 +40,66 @@ void loop()
     if (size != -1)
     {
         u16 VP = (u16)buffer[0] << 8 | buffer[1];
+        u16 button = (u16)buffer[2] << 8 | buffer[3];
         switch (VP)
         {
-        case VP_BUTTON_RESET:
-            timer_wait.Reset();
-            if (!isRunning)
+        case VP_BUTTONS:
+            switch (button)
             {
-                timer_wait.Set(lastTime);
-            }
-            else
+            case BUTTON_STOP:
+                timer_wait.Reset();
+                if (!isRunning)
+                {
+                    timer_wait.Set(lastTime);
+                }
+                else
+                {
+                    digitalWrite(PIN_PUMP, LOW);
+                    Serial.println("PUMP STOPPED");
+                }
+                break;
+            case BUTTON_PAUSE:
+                if (timer_wait.IsRunning())
+                {
+                    timer_wait.Stop();
+                    digitalWrite(PIN_PUMP, LOW);
+                    Serial.println("PUMP PAUSED");
+                }
+                else
+                {
+                    timer_wait.Start();
+                    digitalWrite(PIN_PUMP, HIGH);
+                    Serial.println("PUMP RESUMED");
+                }
+                break;
+            case BUTTON_START:
             {
-                digitalWrite(PIN_PUMP, LOW);
-                Serial.println("PUMP STOPPED");
-            }
-            break;
-        case VP_BUTTON_PAUSE:
-            if (timer_wait.IsRunning())
-            {
-                timer_wait.Stop();
-                digitalWrite(PIN_PUMP, LOW);
-                Serial.println("PUMP PAUSED");
-            }
-            else
-            {
+                lastTime = timer_wait.GetTime();
+                timer_wait.Set(pauseTime);
                 timer_wait.Start();
-                digitalWrite(PIN_PUMP, HIGH);
-                Serial.println("PUMP RESUMED");
             }
             break;
-        case VP_BUTTON_START:
-        {
-            lastTime = timer_wait.GetTime();
-            timer_wait.Set(pauseTime);
-            timer_wait.Start();
-        }
-        break;
-        case VP_WAIT_TIME:
+            }
+            break;
+        case VP_ROOM_NO_START:
+            waitTime = buffer[3] * 60 + buffer[4];
+            lastTime = waitTime;
+            timer_wait.Set(waitTime);
+            timer_wait.PopChanged();
+            break;
+        case VP_ROOM_NO_EDIT:
+            waitTime = buffer[3] * 60 + buffer[4];
+            lastTime = waitTime;
+            timer_wait.Set(waitTime);
+            timer_wait.PopChanged();
+            break;
+        case VP_ROOM_VOL_EDIT:
+            waitTime = buffer[3] * 60 + buffer[4];
+            lastTime = waitTime;
+            timer_wait.Set(waitTime);
+            timer_wait.PopChanged();
+            break;
+        case VP_TIMER:
             waitTime = buffer[3] * 60 + buffer[4];
             lastTime = waitTime;
             timer_wait.Set(waitTime);
@@ -82,7 +113,7 @@ void loop()
     if (timer_wait.PopChanged())
     {
         u16 currTime = timer_wait.GetTime();
-        lcd.SendData(VP_WAIT_TIME, currTime / 60 << 8 | currTime % 60);
+        lcd.SendData(VP_TIMER, currTime / 60 << 8 | currTime % 60);
     }
 
     if (timer_wait.IsFinished())
@@ -97,7 +128,7 @@ void loop()
         }
         else
         {
-            lcd.ChangePage(1);
+            lcd.ChangePage(4);
             timer_wait.Set(lastTime);
             timer_wait.Start();
             isRunning = true;
