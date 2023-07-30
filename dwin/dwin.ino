@@ -4,10 +4,11 @@
 DwinLCD lcd;
 
 #define VP_ROOM_NO_START 0x1001
-#define VP_ROOM_NO_EDIT 0x1002
-#define VP_ROOM_VOL_EDIT 0x1003
-#define VP_TIMER 0x1004
-#define VP_BUTTONS 0x1008
+#define VP_ROOM_NO_EDIT 0x1004
+#define VP_ROOM_VOL_EDIT 0x1007
+
+#define VP_BUTTONS 0x100B
+#define VP_TIMER 0x100C
 
 #define BUTTON_EDIT 0x0000
 #define BUTTON_START 0x0001
@@ -28,7 +29,7 @@ Timer timer_wait(waitTime);
 void setup()
 {
     lcd.being(9600);
-    lcd.ChangePage(0);
+    lcd.ChangePage(1);
     digitalWrite(PIN_PUMP, LOW);
     Serial.println("POWER ON");
 }
