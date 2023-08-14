@@ -29,9 +29,13 @@ Timer timer_wait(waitTime);
 void setup()
 {
     lcd.being(9600);
-    lcd.ChangePage(1);
+    lcd.ChangePage(0);
     digitalWrite(PIN_PUMP, LOW);
     Serial.println("POWER ON");
+    lcd.SendData(VP_TIMER, 48);
+    u16 p;
+    Serial.println(lcd.ReadPointer(VP_TIMER, p));
+    Serial.println(p);
 }
 
 void loop()
@@ -41,7 +45,7 @@ void loop()
     if (size != -1)
     {
         u16 VP = (u16)buffer[0] << 8 | buffer[1];
-        u16 button = (u16)buffer[2] << 8 | buffer[3];
+        u16 button = buffer[4];
         switch (VP)
         {
         case VP_BUTTONS:
@@ -114,7 +118,7 @@ void loop()
     if (timer_wait.PopChanged())
     {
         u16 currTime = timer_wait.GetTime();
-        lcd.SendData(VP_TIMER, currTime / 60 << 8 | currTime % 60);
+        //lcd.SendData(VP_TIMER, currTime / 60 << 8 | currTime % 60);
     }
 
     if (timer_wait.IsFinished())

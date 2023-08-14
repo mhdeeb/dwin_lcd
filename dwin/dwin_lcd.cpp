@@ -21,18 +21,26 @@ void DwinLCD::ChangePage(u16 page)
     };
 
     Serial.write(buff, 10);
+    Serial.println();
 }
 
 void DwinLCD::SendData(u16 VP, u8 *buff, u8 size)
 {
-    Serial.write(0x5A);
-    Serial.write(0xA5);
-    Serial.write(size + 3);
-    Serial.write(0x82);
-    Serial.write(VP >> 8);
-    Serial.write(VP & 0xFF);
+    u8* buff2 = new u8[size + 6];
+
+    buff2[0] = 0x5A;
+    buff2[1] = 0xA5;
+    buff2[2] = size + 3;
+    buff2[3] = 0x82;
+    buff2[4] = VP >> 8;
+    buff2[5] = VP & 0xFF;
+
     for (int i = 0; i < size; i++)
-        Serial.write(buff[i]);
+        buff2[i + 6] = buff[i];
+    
+    Serial.write(buff2, size + 6);
+    Serial.println();
+    delete[] buff2;
 }
 
 void DwinLCD::SendData(u16 VP, u16 data)
@@ -49,23 +57,31 @@ void DwinLCD::SendData(u16 VP, u16 data)
     };
 
     Serial.write(buff, 8);
+    Serial.println();
 }
 
 bool DwinLCD::ReadData(u16 VP, u8 *buff, u8 size, u32 timeout)
 {
 
-    Serial.write(0x5A);
-    Serial.write(0xA5);
-    Serial.write(0x04);
-    Serial.write(0x83);
-    Serial.write(VP >> 8);
-    Serial.write(VP & 0xFF);
-    Serial.write(size);
+    u8 buff2[] = {
+        0x5A,
+        0xA5,
+        0x04,
+        0x83,
+        VP >> 8,
+        VP & 0xFF,
+        size,
+    };
+    
+    Serial.write(buff2, 7);
+
+    Serial.println();
 
     u32 startTime = millis();
 
     while (Serial.available() < 7 + size)
     {
+        Serial.println(Serial.available());
         if (millis() - startTime > timeout)
             return false;
         delay(1);
@@ -81,6 +97,57 @@ bool DwinLCD::ReadData(u16 VP, u8 *buff, u8 size, u32 timeout)
 }
 
 short DwinLCD::ReadData(u8 *buff, u8 size, u32 timeout)
+{
+    u32 startTime = millis();
+
+    while (Serial.available() < 4)
+    {
+        if (millis() - startTime > timeout)
+            return -1;
+        delay(1);
+    }
+
+    u8 buff2[4];
+
+    Serial.readBytes(buff2, 4);
+    u8 count = buff2[2];
+
+    Serial.println("\nHeader:\n");
+    Serial.print("Head 0: ");
+    Serial.println(buff2[0], HEX);
+    Serial.print("Head 1: ");
+    Serial.println(buff2[1], HEX);
+    Serial.print("Count: ");
+    Serial.println(buff2[2]);
+    Serial.print("Code: ");
+    Serial.println(buff2[3], HEX);
+
+    while (Serial.available() < count - 1)
+    {
+        if (millis() - startTime > timeout)
+            return -1;
+        delay(1);
+    }
+
+    short resultLen = Serial.readBytes(buff, count - 1);
+
+    Serial.println("\nData:\n");
+    Serial.print("Count: ");
+    Serial.println(resultLen);
+    Serial.print("VP: ");
+    Serial.println(buff[0] << 8 | buff[1], HEX);
+
+    for (int i = 2; i < resultLen; i++)
+    {
+        Serial.print(i - 2);
+        Serial.print(": ");
+        Serial.println(buff[i]);
+    }
+
+    return resultLen;
+}
+
+short DwinLCD::ReadData2(u8 *buff, u8 size, u32 timeout)
 {
     u32 startTime = millis();
 
