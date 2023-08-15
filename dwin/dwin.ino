@@ -23,7 +23,6 @@ DwinLCD lcd;
 const u16 density = 2;
 
 u8 buffer[256]{};
-u16 currentTime;
 u16 waitTime;
 const u16 pauseTime = 30;
 bool isRunning = false;
