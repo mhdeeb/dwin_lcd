@@ -67,7 +67,7 @@ void saveData()
         dataFile.print(",");
         dataFile.print(rv);
         dataFile.print(",");
-        dataFile.print(GetWaitTime(rv));
+        dataFile.println(GetWaitTime(rv));
     }
 
     dataFile.close();
