@@ -39,7 +39,7 @@ Timer timer_wait(0);
 
 u16 GetWaitTime(u8 roomVolume)
 {
-    return roomVolume * multiplier;
+    return (u16)roomVolume * multiplier;
 }
 
 void saveData()
@@ -123,6 +123,7 @@ void loop()
                 timer_wait.Set(waitTime);
                 break;
             case BUTTON_STOP:
+                isRunning = false;
                 timer_wait.Stop();
                 timer_wait.Set(waitTime);
                 digitalWrite(PIN_PUMP, LOW);
