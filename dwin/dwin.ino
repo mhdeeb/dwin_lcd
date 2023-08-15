@@ -18,6 +18,7 @@ DwinLCD lcd;
 #define BUTTON_RETURN 0x0002
 #define BUTTON_STOP 0x0003
 #define BUTTON_PAUSE 0x0004
+#define BUTTON_EXPORT 0x0005
 
 #define PIN_PUMP 3
 #define SD_ChipSelectPin 4
@@ -98,6 +99,9 @@ void loop()
             button = buffer[4];
             switch (button)
             {
+            case BUTTON_EXPORT:
+                saveData();
+                break;
             case BUTTON_RETURN:
                 EEPROM.get(roomNumber, roomVolume);
 
@@ -150,8 +154,6 @@ void loop()
             roomVolume = buffer[4];
 
             EEPROM.put(roomNumber, roomVolume);
-
-            saveData();
             break;
         }
     }
