@@ -60,9 +60,11 @@ void saveData()
 
     for (int i = 0; i < 511; i++)
     {
+        EEPROM.get(i, rv);
+        if (!rv)
+            continue;
         dataFile.print(i);
         dataFile.print(",");
-        EEPROM.get(i, rv);
         dataFile.print(rv);
         dataFile.print(",");
         dataFile.print(GetWaitTime(rv));
@@ -83,11 +85,11 @@ void setup()
 
     EEPROM.get(000, roomVolume);
 
-    waitTime = GetWaitTime(roomVolume);
-
     EEPROM.get(MULTIPLIER_POSITION, multiplier);
 
     lcd.SendData(VP_MULTIPLIER_EDIT, multiplier);
+
+    waitTime = GetWaitTime(roomVolume);
 
     timer_wait.Set(waitTime);
 
@@ -112,7 +114,9 @@ void loop()
                 saveData();
                 break;
             case BUTTON_RETURN:
-                EEPROM.get(roomNumber, roomVolume);
+                lcd.SendData(VP_ROOM_NO_START, 000);
+
+                EEPROM.get(000, roomVolume);
 
                 waitTime = GetWaitTime(roomVolume);
 
