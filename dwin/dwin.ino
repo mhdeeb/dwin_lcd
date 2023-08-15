@@ -2,6 +2,7 @@
 #include "Timer.h"
 
 #include <EEPROM.h>
+#include <SD.h>
 
 DwinLCD lcd;
 
@@ -19,6 +20,7 @@ DwinLCD lcd;
 #define BUTTON_PAUSE 0x0004
 
 #define PIN_PUMP 3
+#define SD_ChipSelectPin 4
 
 const u16 density = 2;
 
@@ -36,6 +38,33 @@ Timer timer_wait(0);
 u16 GetWaitTime(u8 roomVolume)
 {
     return roomVolume;
+}
+
+void saveData()
+{
+    if (!SD.begin(SD_ChipSelectPin))
+    {
+        return;
+    }
+
+    if (SD.exists("data.csv"))
+        SD.remove("data.csv");
+
+    File dataFile = SD.open("data.csv", FILE_WRITE);
+
+    dataFile.println("Room No.,Room Vol.");
+
+    u8 rv;
+
+    for (int i = 0; i < 512; i++)
+    {
+        dataFile.print(i);
+        dataFile.print(",");
+        EEPROM.get(i, rv);
+        dataFile.println(rv);
+    }
+
+    dataFile.close();
 }
 
 void setup()
@@ -121,6 +150,8 @@ void loop()
             roomVolume = buffer[4];
 
             EEPROM.put(roomNumber, roomVolume);
+
+            saveData();
             break;
         }
     }
