@@ -70,6 +70,8 @@ void saveData()
 
 void setup()
 {
+    pinMode(PIN_PUMP, OUTPUT);
+
     lcd.being(9600);
 
     lcd.ChangePage(0);
