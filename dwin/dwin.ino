@@ -9,6 +9,7 @@ DwinLCD lcd;
 #define VP_ROOM_NO_START 0x1001
 #define VP_ROOM_NO_EDIT 0x1004
 #define VP_ROOM_VOL_EDIT 0x1005
+#define VP_MULTIPLIER_EDIT 0x1006
 
 #define VP_BUTTONS 0x100B
 #define VP_TIMER 0x100C
@@ -22,8 +23,7 @@ DwinLCD lcd;
 
 #define PIN_PUMP 3
 #define SD_ChipSelectPin 4
-
-const u16 density = 2;
+#define MULTIPLIER_POSITION 512
 
 u8 buffer[256]{};
 u16 waitTime;
@@ -33,12 +33,13 @@ bool isRunning = false;
 u16 button;
 u8 roomNumber;
 u8 roomVolume;
+u8 multiplier;
 
 Timer timer_wait(0);
 
 u16 GetWaitTime(u8 roomVolume)
 {
-    return roomVolume;
+    return roomVolume * multiplier;
 }
 
 void saveData()
@@ -53,16 +54,18 @@ void saveData()
 
     File dataFile = SD.open("data.csv", FILE_WRITE);
 
-    dataFile.println("Room No.,Room Vol.");
+    dataFile.println("Room No.,Room Vol.,Run Time");
 
     u8 rv;
 
-    for (int i = 0; i < 512; i++)
+    for (int i = 0; i < 511; i++)
     {
         dataFile.print(i);
         dataFile.print(",");
         EEPROM.get(i, rv);
-        dataFile.println(rv);
+        dataFile.print(rv);
+        dataFile.print(",");
+        dataFile.print(GetWaitTime(rv));
     }
 
     dataFile.close();
@@ -81,6 +84,10 @@ void setup()
     EEPROM.get(000, roomVolume);
 
     waitTime = GetWaitTime(roomVolume);
+
+    EEPROM.get(MULTIPLIER_POSITION, multiplier);
+
+    lcd.SendData(VP_MULTIPLIER_EDIT, multiplier);
 
     timer_wait.Set(waitTime);
 
@@ -156,6 +163,11 @@ void loop()
             roomVolume = buffer[4];
 
             EEPROM.put(roomNumber, roomVolume);
+            break;
+        case VP_MULTIPLIER_EDIT:
+            multiplier = buffer[4];
+
+            EEPROM.put(MULTIPLIER_POSITION, multiplier);
             break;
         }
     }
