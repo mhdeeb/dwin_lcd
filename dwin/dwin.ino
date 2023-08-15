@@ -13,7 +13,6 @@ DwinLCD lcd;
 u8 buffer[256]{};
 u16 waitTime = 300;
 const u16 pauseTime = 30;
-u16 lastTime = waitTime;
 bool isRunning = false;
 
 Timer timer_wait(waitTime);
@@ -22,6 +21,7 @@ void setup()
 {
     lcd.being(9600);
     lcd.ChangePage(0);
+    pinMode(PIN_PUMP, OUTPUT);
     digitalWrite(PIN_PUMP, LOW);
     Serial.println("POWER ON");
 }
@@ -36,41 +36,29 @@ void loop()
         switch (VP)
         {
         case VP_BUTTON_RESET:
-            timer_wait.Reset();
-            if (!isRunning)
-            {
-                timer_wait.Set(lastTime);
-            }
-            else
-            {
-                digitalWrite(PIN_PUMP, LOW);
-                Serial.println("PUMP STOPPED");
-            }
+            timer_wait.Stop();
+            timer_wait.Set(waitTime);
+            isRunning = false;
+            digitalWrite(PIN_PUMP, LOW);
             break;
         case VP_BUTTON_PAUSE:
             if (timer_wait.IsRunning())
             {
                 timer_wait.Stop();
                 digitalWrite(PIN_PUMP, LOW);
-                Serial.println("PUMP PAUSED");
             }
             else
             {
                 timer_wait.Start();
                 digitalWrite(PIN_PUMP, HIGH);
-                Serial.println("PUMP RESUMED");
             }
             break;
         case VP_BUTTON_START:
-        {
-            lastTime = timer_wait.GetTime();
             timer_wait.Set(pauseTime);
             timer_wait.Start();
-        }
-        break;
+            break;
         case VP_WAIT_TIME:
             waitTime = buffer[3] * 60 + buffer[4];
-            lastTime = waitTime;
             timer_wait.Set(waitTime);
             timer_wait.PopChanged();
             break;
@@ -87,22 +75,20 @@ void loop()
 
     if (timer_wait.IsFinished())
     {
+        timer_wait.Stop();
+        timer_wait.Set(waitTime);
         if (isRunning)
         {
             lcd.ChangePage(0);
-            timer_wait.Reset();
             isRunning = false;
             digitalWrite(PIN_PUMP, LOW);
-            Serial.println("PUMP FINISHED");
         }
         else
         {
             lcd.ChangePage(1);
-            timer_wait.Set(lastTime);
             timer_wait.Start();
             isRunning = true;
             digitalWrite(PIN_PUMP, HIGH);
-            Serial.println("PUMP STARTED");
         }
     }
 }
