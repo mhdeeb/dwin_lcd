@@ -32,11 +32,6 @@ void setup()
     lcd.ChangePage(0);
     digitalWrite(PIN_PUMP, LOW);
     Serial.println("POWER ON");
-
-    lcd.SendData(VP_TIMER, 48);
-    u16 p;
-    Serial.println(lcd.ReadPointer(VP_TIMER, p));
-    Serial.println(p);
 }
 
 void loop()
@@ -119,7 +114,7 @@ void loop()
     if (timer_wait.PopChanged())
     {
         u16 currTime = timer_wait.GetTime();
-        // lcd.SendData(VP_TIMER, currTime / 60 << 8 | currTime % 60);
+        lcd.SendData(VP_TIMER, currTime / 60 << 8 | currTime % 60);
     }
 
     if (timer_wait.IsFinished())

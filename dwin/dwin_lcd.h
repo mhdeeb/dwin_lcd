@@ -19,8 +19,6 @@ public:
     bool ReadPointer(u16 VP, u16 &data, u32 timeout = 1000);
 
     short ReadData(u8 *buff, u8 size, u32 timeout = 1000);
-
-    short ReadData2(u8 *buff, u8 size, u32 timeout = 1000);
 };
 
 #endif // DWIN_LCD_H
