@@ -2,10 +2,10 @@
 
 void setup()
 {
-    Serial.begin(9600);
-
-    for (int i = 0; i < 512; i++)
+    for (int i = 0; i < 511; i++)
         EEPROM.write(i, 0);
+
+    EEPROM.write(511, 50);
 }
 
 void loop() {}
