@@ -14,7 +14,7 @@ private:
     u32 max;
     u32 min;
     u32 step;
-    bool isCycleable;
+    bool isCyclable;
     bool isLocked = false;
 
 public:
@@ -36,9 +36,9 @@ public:
 
     u32 GetStep() const;
 
-    void SetCycleable(bool isCycleable);
+    void SetCyclable(bool isCyclable);
 
-    bool IsCycleable() const;
+    bool IsCyclable() const;
 
     void Increment();
 

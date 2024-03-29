@@ -4,13 +4,13 @@
 
 #include "Counter.h"
 
-Counter::Counter(u32 min, u32 max, u32 initialValue, u32 step, bool isCycleable)
+Counter::Counter(u32 min, u32 max, u32 initialValue, u32 step, bool isCyclable)
 {
     SetMin(min);
     SetMax(max);
     SetStep(step);
     SetValue(initialValue);
-    SetCycleable(isCycleable);
+    SetCyclable(isCyclable);
 }
 
 void Counter::SetValue(u32 value)
@@ -33,15 +33,15 @@ void Counter::SetStep(u32 step) { this->step = step; }
 
 u32 Counter::GetStep() const { return step; }
 
-void Counter::SetCycleable(bool isCycleable) { this->isCycleable = isCycleable; }
+void Counter::SetCyclable(bool isCyclable) { this->isCyclable = isCyclable; }
 
-bool Counter::IsCycleable() const { return isCycleable; }
+bool Counter::IsCyclable() const { return isCyclable; }
 
 void Counter::Increment()
 {
     if (GetValue() + step < GetValue())
     {
-        if (isCycleable)
+        if (isCyclable)
             SetValue(min + GetValue() + step);
         else
             SetValue(-1);
@@ -51,7 +51,7 @@ void Counter::Increment()
 
     if (GetValue() > max)
     {
-        if (isCycleable)
+        if (isCyclable)
             SetValue(min + GetValue() - max - 1);
         else
             SetValue(max);
@@ -62,7 +62,7 @@ void Counter::Decrement()
 {
     if (GetValue() < step)
     {
-        if (isCycleable)
+        if (isCyclable)
             SetValue(max - (step - GetValue()) + 1);
         else
             SetValue(0);
@@ -72,7 +72,7 @@ void Counter::Decrement()
 
     if (GetValue() < min)
     {
-        if (isCycleable)
+        if (isCyclable)
             SetValue(max - min + GetValue() + 1);
         else
             SetValue(min);
