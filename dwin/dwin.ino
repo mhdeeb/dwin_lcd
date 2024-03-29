@@ -24,7 +24,8 @@ DwinLCD lcd;
 
 #define PIN_PUMP 3
 #define SD_ChipSelectPin 4
-#define RATE_ADDRESS 512
+#define ADDRESS_RATE 512
+#define ADDRESS_MODE 513
 
 #define PAGE_WELCOME 0
 #define PAGE_START_1 1
@@ -99,7 +100,7 @@ void setup()
 
     EEPROM.get(000, roomVolume);
 
-    EEPROM.get(RATE_ADDRESS, rate);
+    EEPROM.get(ADDRESS_RATE, rate);
 
     lcd.SendData(VP_RATE_EDIT, rate);
 
@@ -192,7 +193,7 @@ void loop()
 
             rate = buffer[4];
 
-            EEPROM.put(RATE_ADDRESS, rate);
+            EEPROM.put(ADDRESS_RATE, rate);
             break;
         }
     }
