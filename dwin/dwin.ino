@@ -196,6 +196,17 @@ void loop()
 
                 timer_wait.Set(waitTime);
                 break;
+            case BUTTON_EDIT:
+                EEPROM.get(roomNumber, roomVolume);
+
+                lcd.SendData(VP_ROOM_NO_EDIT, roomNumber);
+
+                lcd.SendData(VP_ROOM_VOL_EDIT, roomVolume);
+
+                EEPROM.get(EEPROM_RATE, rate);
+
+                lcd.SendData(VP_RATE_EDIT, rate);
+                break;
             }
             break;
         case VP_ROOM_NO_START:
