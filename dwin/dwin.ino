@@ -22,8 +22,9 @@ DwinLCD lcd;
 #define BUTTON_EXPORT 0x0005
 #define BUTTON_BASIC 0x0006
 
-#define PIN_PUMP 3
-#define SD_ChipSelectPin 4
+#define PIN_PUMP 4
+#define PIN_CS 10
+
 #define EEPROM_RATE 1000
 #define EEPROM_MODE 1002
 #define EEPROM_BASIC_TIME_D 1003
@@ -37,8 +38,9 @@ DwinLCD lcd;
 #define PAGE_PAUSE 6
 #define PAGE_RUN 7
 
-const u16 DENSITY = 3;
-const u16 DEFAULT_RATE = 50;
+const u16 SATURATION = 3;   // 3ml/m^3
+const u16 MACHINE_RATE = 3; // 3ml/sec
+const u16 DEFAULT_RATE = 100;
 const u16 PAUSE_TIME = 30;
 const u32 WELCOME_DELAY_MS = 5000;
 
@@ -56,12 +58,12 @@ Timer timer_wait(0);
 
 u16 GetWaitTime(u16 roomVolume)
 {
-    return roomVolume * DENSITY * 60 / rate;
+    return roomVolume * SATURATION / MACHINE_RATE * rate / 100;
 }
 
 void saveData()
 {
-    if (!SD.begin(SD_ChipSelectPin))
+    if (!SD.begin(PIN_CS))
     {
         return;
     }
