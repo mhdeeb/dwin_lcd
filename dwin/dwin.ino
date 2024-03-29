@@ -16,18 +16,29 @@ DwinLCD lcd;
 
 #define BUTTON_EDIT 0x0000
 #define BUTTON_START 0x0001
-#define BUTTON_RETURN 0x0002
+#define BUTTON_ADVANCED 0x0002
 #define BUTTON_STOP 0x0003
 #define BUTTON_PAUSE 0x0004
 #define BUTTON_EXPORT 0x0005
+#define BUTTON_BASIC 0x0005
 
 #define PIN_PUMP 3
 #define SD_ChipSelectPin 4
 #define RATE_ADDRESS 512
 
-const u16 density = 3;
-const u16 defaultRate = 50;
-const u16 pauseTime = 30;
+#define PAGE_WELCOME 0
+#define PAGE_START_1 1
+#define PAGE_START_2 2
+#define PAGE_EDIT 3
+#define PAGE_KEYBOARD 4
+#define PAGE_WAIT 5
+#define PAGE_PAUSE 6
+#define PAGE_RUN 7
+
+
+const u16 DENSITY = 3;
+const u16 DEFAULT_RATE = 50;
+const u16 PAUSE_TIME = 30;
 
 u8 buffer[256]{};
 u16 waitTime;
@@ -42,7 +53,7 @@ Timer timer_wait(0);
 
 u16 GetWaitTime(u8 roomVolume)
 {
-    return (u16)roomVolume * density * 60 / rate;
+    return (u16)roomVolume * DENSITY * 60 / rate;
 }
 
 void saveData()
@@ -82,7 +93,7 @@ void setup()
 
     lcd.being(9600);
 
-    lcd.ChangePage(0);
+    lcd.ChangePage(PAGE_WELCOME);
 
     lcd.SendData(VP_ROOM_NO_START, 000);
 
@@ -116,7 +127,7 @@ void loop()
             case BUTTON_EXPORT:
                 saveData();
                 break;
-            case BUTTON_RETURN:
+            case BUTTON_ADVANCED:
                 lcd.SendData(VP_ROOM_NO_START, 000);
 
                 EEPROM.get(000, roomVolume);
@@ -145,7 +156,7 @@ void loop()
                 break;
             case BUTTON_START:
             {
-                timer_wait.Set(pauseTime);
+                timer_wait.Set(PAUSE_TIME);
                 timer_wait.Start();
             }
             break;
@@ -175,7 +186,7 @@ void loop()
         case VP_RATE_EDIT:
             if (!buffer[4])
             {
-                buffer[4] = defaultRate;
+                buffer[4] = DEFAULT_RATE;
                 lcd.SendData(VP_RATE_EDIT, buffer[4]);
             }
 
@@ -207,7 +218,7 @@ void loop()
         else
         {
             timer_wait.Start();
-            lcd.ChangePage(4);
+            lcd.ChangePage(PAGE_RUN);
             isRunning = true;
             digitalWrite(PIN_PUMP, HIGH);
         }
