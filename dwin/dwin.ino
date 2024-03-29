@@ -99,7 +99,7 @@ void setup()
 
     EEPROM.get(000, roomVolume);
 
-    EEPROM.get(VP_RATE, rate);
+    EEPROM.get(EEPROM_RATE, rate);
 
     lcd.SendData(VP_RATE_EDIT, rate);
 
@@ -192,7 +192,7 @@ void loop()
 
             rate = buffer[4];
 
-            EEPROM.put(VP_RATE, rate);
+            EEPROM.put(EEPROM_RATE, rate);
             break;
         }
     }
