@@ -248,6 +248,8 @@ void loop()
             waitTime = buffer[3] * 60 + buffer[4];
 
             timer_wait.Set(waitTime);
+
+            timer_wait.PopChanged();
             break;
         }
     }
