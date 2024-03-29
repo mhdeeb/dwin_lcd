@@ -48,7 +48,7 @@ bool isRunning = false;
 bool isAdvanced = false;
 
 u16 button;
-u8 roomNumber;
+u8 roomNumber = 0;
 u8 roomVolume;
 u8 rate;
 
@@ -150,9 +150,9 @@ void loop()
 
                 EEPROM.put(EEPROM_MODE, isAdvanced);
 
-                lcd.SendData(VP_ROOM_NO_START, 000);
+                lcd.SendData(VP_ROOM_NO_START, roomNumber);
 
-                EEPROM.get(000, roomVolume);
+                EEPROM.get(roomNumber, roomVolume);
 
                 waitTime = GetWaitTime(roomVolume);
 
@@ -239,6 +239,15 @@ void loop()
             rate = buffer[4];
 
             EEPROM.put(EEPROM_RATE, rate);
+            break;
+        case VP_TIMER:
+            EEPROM.put(EEPROM_BASIC_TIME_D, buffer[4]);
+
+            EEPROM.put(EEPROM_BASIC_TIME_D + 1, buffer[3]);
+
+            waitTime = buffer[3] * 60 + buffer[4];
+
+            timer_wait.Set(waitTime);
             break;
         }
     }
