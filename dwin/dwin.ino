@@ -24,8 +24,8 @@ DwinLCD lcd;
 
 #define PIN_PUMP 3
 #define SD_ChipSelectPin 4
-#define VP_RATE 512
-#define VP_MODE 513
+#define EEPROM_RATE 512
+#define EEPROM_MODE 513
 
 #define PAGE_WELCOME 0
 #define PAGE_START_1 1
@@ -35,7 +35,6 @@ DwinLCD lcd;
 #define PAGE_WAIT 5
 #define PAGE_PAUSE 6
 #define PAGE_RUN 7
-
 
 const u16 DENSITY = 3;
 const u16 DEFAULT_RATE = 50;
