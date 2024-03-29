@@ -51,8 +51,8 @@ bool isAdvanced = false;
 
 u16 button;
 u16 roomNumber = 0;
-u16 roomVolume;
-u16 rate;
+u16 roomVolume; // m^3
+u16 rate;       // %
 
 Timer timer_wait(0);
 
