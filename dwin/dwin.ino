@@ -20,12 +20,13 @@ DwinLCD lcd;
 #define BUTTON_STOP 0x0003
 #define BUTTON_PAUSE 0x0004
 #define BUTTON_EXPORT 0x0005
-#define BUTTON_BASIC 0x0005
+#define BUTTON_BASIC 0x0006
 
 #define PIN_PUMP 3
 #define SD_ChipSelectPin 4
 #define EEPROM_RATE 512
 #define EEPROM_MODE 513
+#define EEPROM_BASIC_TIME_D 514
 
 #define PAGE_WELCOME 0
 #define PAGE_START_1 1
@@ -39,10 +40,12 @@ DwinLCD lcd;
 const u16 DENSITY = 3;
 const u16 DEFAULT_RATE = 50;
 const u16 PAUSE_TIME = 30;
+const u32 WELCOME_DELAY_MS = 5000;
 
 u8 buffer[256]{};
 u16 waitTime;
 bool isRunning = false;
+bool isAdvanced = false;
 
 u16 button;
 u8 roomNumber;
@@ -72,7 +75,7 @@ void saveData()
 
     u8 rv;
 
-    for (int i = 0; i < 511; i++)
+    for (int i = 0; i < 512; i++)
     {
         EEPROM.get(i, rv);
         if (!rv)
@@ -95,19 +98,34 @@ void setup()
 
     lcd.ChangePage(PAGE_WELCOME);
 
-    lcd.SendData(VP_ROOM_NO_START, 000);
-
-    EEPROM.get(000, roomVolume);
-
     EEPROM.get(EEPROM_RATE, rate);
 
     lcd.SendData(VP_RATE_EDIT, rate);
 
-    waitTime = GetWaitTime(roomVolume);
+    digitalWrite(PIN_PUMP, LOW);
+
+    EEPROM.get(EEPROM_MODE, isAdvanced);
+
+    delay(WELCOME_DELAY_MS);
+
+    if (isAdvanced)
+    {
+        lcd.SendData(VP_ROOM_NO_START, 000);
+
+        EEPROM.get(000, roomVolume);
+
+        waitTime = GetWaitTime(roomVolume);
+
+        lcd.ChangePage(PAGE_START_2);
+    }
+    else
+    {
+        EEPROM.get(EEPROM_BASIC_TIME_D, waitTime);
+        waitTime = (waitTime >> 8) * 60 + (waitTime & 0xFF);
+        lcd.ChangePage(PAGE_START_1);
+    }
 
     timer_wait.Set(waitTime);
-
-    digitalWrite(PIN_PUMP, LOW);
 }
 
 void loop()
@@ -128,6 +146,10 @@ void loop()
                 saveData();
                 break;
             case BUTTON_ADVANCED:
+                isAdvanced = true;
+
+                EEPROM.put(EEPROM_MODE, isAdvanced);
+
                 lcd.SendData(VP_ROOM_NO_START, 000);
 
                 EEPROM.get(000, roomVolume);
@@ -138,9 +160,14 @@ void loop()
                 break;
             case BUTTON_STOP:
                 isRunning = false;
+
                 timer_wait.Stop();
+
                 timer_wait.Set(waitTime);
+
                 digitalWrite(PIN_PUMP, LOW);
+
+                lcd.ChangePage(isAdvanced ? PAGE_START_2 : PAGE_START_1);
                 break;
             case BUTTON_PAUSE:
                 if (timer_wait.IsRunning())
@@ -155,11 +182,20 @@ void loop()
                 }
                 break;
             case BUTTON_START:
-            {
                 timer_wait.Set(PAUSE_TIME);
                 timer_wait.Start();
-            }
-            break;
+                break;
+            case BUTTON_BASIC:
+                isAdvanced = false;
+
+                EEPROM.put(EEPROM_MODE, isAdvanced);
+
+                EEPROM.get(EEPROM_BASIC_TIME_D, waitTime);
+
+                waitTime = (waitTime >> 8) * 60 + (waitTime & 0xFF);
+
+                timer_wait.Set(waitTime);
+                break;
             }
             break;
         case VP_ROOM_NO_START:
@@ -180,7 +216,6 @@ void loop()
             break;
         case VP_ROOM_VOL_EDIT:
             roomVolume = buffer[4];
-
             EEPROM.put(roomNumber, roomVolume);
             break;
         case VP_RATE_EDIT:
@@ -211,16 +246,16 @@ void loop()
         timer_wait.Set(waitTime);
         if (isRunning)
         {
-            lcd.ChangePage(0);
-            isRunning = false;
+            lcd.ChangePage(isAdvanced ? PAGE_START_2 : PAGE_START_1);
             digitalWrite(PIN_PUMP, LOW);
+            isRunning = false;
         }
         else
         {
             timer_wait.Start();
             lcd.ChangePage(PAGE_RUN);
-            isRunning = true;
             digitalWrite(PIN_PUMP, HIGH);
+            isRunning = true;
         }
     }
 }
