@@ -24,9 +24,9 @@ DwinLCD lcd;
 
 #define PIN_PUMP 3
 #define SD_ChipSelectPin 4
-#define EEPROM_RATE 512
-#define EEPROM_MODE 513
-#define EEPROM_BASIC_TIME_D 514
+#define EEPROM_RATE 1000
+#define EEPROM_MODE 1002
+#define EEPROM_BASIC_TIME_D 1003
 
 #define PAGE_WELCOME 0
 #define PAGE_START_1 1
@@ -48,15 +48,15 @@ bool isRunning = false;
 bool isAdvanced = false;
 
 u16 button;
-u8 roomNumber = 0;
-u8 roomVolume;
-u8 rate;
+u16 roomNumber = 0;
+u16 roomVolume;
+u16 rate;
 
 Timer timer_wait(0);
 
-u16 GetWaitTime(u8 roomVolume)
+u16 GetWaitTime(u16 roomVolume)
 {
-    return (u16)roomVolume * DENSITY * 60 / rate;
+    return roomVolume * DENSITY * 60 / rate;
 }
 
 void saveData()
@@ -73,13 +73,15 @@ void saveData()
 
     dataFile.println("Room No.,Room Vol.,Run Time");
 
-    u8 rv;
+    u16 rv;
 
-    for (int i = 0; i < 512; i++)
+    for (int i = 0; i < 500; i++)
     {
-        EEPROM.get(i, rv);
+        EEPROM.get(i * 2, rv);
+
         if (!rv)
             continue;
+
         dataFile.print(i);
         dataFile.print(",");
         dataFile.print(rv);
@@ -110,9 +112,9 @@ void setup()
 
     if (isAdvanced)
     {
-        lcd.SendData(VP_ROOM_NO_START, 000);
+        lcd.SendData(VP_ROOM_NO_START, roomNumber);
 
-        EEPROM.get(000, roomVolume);
+        EEPROM.get(roomNumber, roomVolume);
 
         waitTime = GetWaitTime(roomVolume);
 
@@ -210,7 +212,7 @@ void loop()
             }
             break;
         case VP_ROOM_NO_START:
-            roomNumber = buffer[4];
+            roomNumber = (u16)buffer[3] << 8 | buffer[4];
 
             EEPROM.get(roomNumber, roomVolume);
 
@@ -219,31 +221,29 @@ void loop()
             timer_wait.Set(waitTime);
             break;
         case VP_ROOM_NO_EDIT:
-            roomNumber = buffer[4];
+            roomNumber = (u16)buffer[3] << 8 | buffer[4];
 
             EEPROM.get(roomNumber, roomVolume);
 
             lcd.SendData(VP_ROOM_VOL_EDIT, roomVolume);
             break;
         case VP_ROOM_VOL_EDIT:
-            roomVolume = buffer[4];
+            roomVolume = (u16)buffer[3] << 8 | buffer[4];
             EEPROM.put(roomNumber, roomVolume);
             break;
         case VP_RATE_EDIT:
-            if (!buffer[4])
+            if (!buffer[3] && !buffer[4])
             {
                 buffer[4] = DEFAULT_RATE;
-                lcd.SendData(VP_RATE_EDIT, buffer[4]);
+                lcd.SendData(VP_RATE_EDIT, (u16)buffer[4]);
             }
 
-            rate = buffer[4];
+            rate = (u16)buffer[3] << 8 | buffer[4];
 
             EEPROM.put(EEPROM_RATE, rate);
             break;
         case VP_TIMER:
-            EEPROM.put(EEPROM_BASIC_TIME_D, buffer[4]);
-
-            EEPROM.put(EEPROM_BASIC_TIME_D + 1, buffer[3]);
+            EEPROM.put(EEPROM_BASIC_TIME_D, (u16)buffer[3] << 8 | buffer[4]);
 
             waitTime = buffer[3] * 60 + buffer[4];
 

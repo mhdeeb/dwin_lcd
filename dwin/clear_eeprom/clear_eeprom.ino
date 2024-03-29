@@ -2,10 +2,10 @@
 
 void setup()
 {
-    for (int i = 0; i < 516; i++)
-        EEPROM.write(i, 0);
+    for (int i = 0; i < 503; i++)
+        EEPROM.put(i * 2, 0);
 
-    EEPROM.write(512, 50);
+    EEPROM.put(1000, 50 << 8);
 }
 
 void loop() {}
