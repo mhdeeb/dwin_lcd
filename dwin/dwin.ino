@@ -38,9 +38,9 @@ DwinLCD lcd;
 #define PAGE_PAUSE 6
 #define PAGE_RUN 7
 
-const u16 SATURATION = 3;   // 3ml/m^3
-const u16 MACHINE_RATE = 3; // 3ml/sec
-const u16 DEFAULT_RATE = 100;
+const u16 SATURATION = 3;    // 3ml/m^3
+const u16 MACHINE_RATE = 50; // 3ml/min
+const u16 DEFAULT_RATE = 50;
 const u16 PAUSE_TIME = 30;
 const u32 WELCOME_DELAY_MS = 5000;
 
@@ -58,7 +58,7 @@ Timer timer_wait(0);
 
 u16 GetWaitTime(u16 roomVolume)
 {
-    return roomVolume * SATURATION / MACHINE_RATE * rate / 100;
+    return rate * roomVolume * 60 / (50 * MACHINE_RATE);
 }
 
 void saveData()
