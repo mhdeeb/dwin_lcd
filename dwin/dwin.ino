@@ -58,7 +58,7 @@ Timer timer_wait(0);
 
 u16 GetWaitTime(u16 roomVolume)
 {
-    return rate * roomVolume * 60 / (50 * MACHINE_RATE);
+    return (u32)rate * roomVolume * 60 / (50 * MACHINE_RATE);
 }
 
 void saveData()
